@@ -3,8 +3,8 @@ import { getFavorites, removeFavorite } from "../utils/favorites";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import "../styles/bookDetail.css";
+const API = process.env.REACT_APP_API_URL;
 
-const API = process.env.REACT_APP_API_BASE_URL;
 
 const Favorites = () => {
   const [favorites, setFavorites] = useState([]);

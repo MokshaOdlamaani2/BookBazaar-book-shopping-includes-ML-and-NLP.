@@ -4,7 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import "../styles/authPages.css";
 
-const API = process.env.REACT_APP_API_BASE_URL;
+const API = process.env.REACT_APP_API_URL;
+
 
 const Register = () => {
   const [name, setName] = useState("");

@@ -14,7 +14,8 @@ import {
 import { addFavorite, removeFavorite } from "../utils/favorites";
 import "../styles/browseBooks.css";
 
-const API = process.env.REACT_APP_API_BASE_URL;
+const API = process.env.REACT_APP_API_URL;
+
 
 const BrowseBooks = () => {
   const [books, setBooks] = useState([]);

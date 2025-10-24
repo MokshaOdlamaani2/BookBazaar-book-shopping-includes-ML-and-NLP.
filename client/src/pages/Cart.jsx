@@ -4,7 +4,8 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import "../styles/myListings.css";
 
-const API = process.env.REACT_APP_API_BASE_URL;
+const API = process.env.REACT_APP_API_URL;
+
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);

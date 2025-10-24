@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
-const API = "https://your-api.com"; // replace with your API
+const API = process.env.REACT_APP_API_URL;
+
 
 const BookDetail = () => {
   const { id } = useParams();

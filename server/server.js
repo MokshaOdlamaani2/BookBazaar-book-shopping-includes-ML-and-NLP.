@@ -1,6 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
@@ -18,8 +20,10 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(helmet()); // Security headers
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*', credentials: true }));
 app.use(express.json());
+app.use(morgan('combined')); // Logging
 
 // Ensure uploads directory exists
 const uploadDir = path.join(process.cwd(), 'uploads');
@@ -49,8 +53,14 @@ app.use('/api/books', protect, bookRoutes);
 app.use('/api/orders', protect, orderRoutes);
 app.use('/api/favorites', protect, favoriteRoutes);
 
-// Optional: a public root route
+// Optional: public root route
 app.get('/', (req, res) => res.send('Welcome to BookBazaar API'));
+
+// Global error handler (optional)
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({ message: err.message || 'Server Error' });
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
