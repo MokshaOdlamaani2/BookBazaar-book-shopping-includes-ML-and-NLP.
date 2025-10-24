@@ -1,0 +1,16 @@
+flask
+flask-cors
+scikit-learn
+pandas
+joblib
+yake
+nltk
+rake-nltk
+requests
+flask
+flask-cors
+joblib
+scikit-learn
+pandas
+yake
+numpy
