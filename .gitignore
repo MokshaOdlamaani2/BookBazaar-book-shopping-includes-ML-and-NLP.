@@ -1,8 +1,7 @@
 # Ignore virtual environments, large files, etc.
 venv/
 __pycache__/
-*.pkl
-*.json
+
 
 .env
 
