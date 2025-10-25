@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API = "http://localhost:5000/api/favorites";
+const API = `${process.env.REACT_APP_API_URL}/favorites`;
+
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");

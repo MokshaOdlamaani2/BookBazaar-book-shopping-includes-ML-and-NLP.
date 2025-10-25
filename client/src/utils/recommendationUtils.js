@@ -1,10 +1,10 @@
 // 📁 src/utils/recommendationUtils.js
 import axios from "axios";
 import { addFavorite, removeFavorite } from "./favorites";
-
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = process.env.REACT_APP_API_URL;
 const INTERACTION_API = `${API_BASE}/interactions`;
 const BOOKS_BY_IDS_API = `${API_BASE}/books/by-ids`;
+
 
 // 📌 Save interaction to backend and localStorage
 export const saveInteraction = async (bookId, type = "view") => {
