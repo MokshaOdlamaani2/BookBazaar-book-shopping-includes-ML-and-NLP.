@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
-const API = process.env.REACT_APP_API_URL;
-
+// ✅ Vite environment variable
+const API = import.meta.env.VITE_API_URL;
 
 const BookDetail = () => {
   const { id } = useParams();
@@ -13,10 +13,11 @@ const BookDetail = () => {
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const res = await axios.get(`${API}/books/${id}`);
+        // ✅ Updated API path to include /api
+        const res = await axios.get(`${API}/api/books/${id}`);
         setBookData(res.data);
 
-        // Check cached tags
+        // Tags caching
         const cachedTags = sessionStorage.getItem(`tags-${id}`);
         if (cachedTags) {
           setTags(JSON.parse(cachedTags));
@@ -29,7 +30,7 @@ const BookDetail = () => {
           sessionStorage.setItem(`tags-${id}`, JSON.stringify(fetchedTags));
         }
       } catch (err) {
-        console.error("Failed to fetch book", err);
+        console.error("❌ Failed to fetch book:", err);
       }
     };
 

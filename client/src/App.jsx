@@ -60,7 +60,7 @@ function App() {
           />
         </Routes>
 
-        {/* ✅ Toast container must be outside Routes */}
+        {/* ✅ Toast container outside of Routes */}
         <ToastContainer position="top-center" autoClose={3000} />
       </Router>
     </AuthProvider>

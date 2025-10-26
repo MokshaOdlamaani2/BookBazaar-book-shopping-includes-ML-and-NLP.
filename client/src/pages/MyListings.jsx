@@ -5,7 +5,7 @@ import "../styles/myListings.css";
 import { AuthContext } from "../AuthContext";
 import { toast } from "react-toastify";
 
-const API = process.env.REACT_APP_API_BASE_URL;
+const API = import.meta.env.VITE_API_URL;
 
 const MyListings = () => {
   const [books, setBooks] = useState([]);
@@ -21,9 +21,11 @@ const MyListings = () => {
         const res = await axios.get(`${API}/api/books/my-books`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setBooks(res.data);
+        // ✅ Ensure proper data parsing
+        setBooks(res.data.books || res.data);
       } catch (err) {
-        toast.error("Failed to fetch listings");
+        toast.error("Failed to fetch your listings");
+        console.error("MyListings fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -39,9 +41,10 @@ const MyListings = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBooks((prev) => prev.filter((b) => b._id !== id));
-      toast.success("Deleted");
+      toast.success("Book deleted successfully");
     } catch (err) {
       toast.error("Delete failed");
+      console.error("Delete error:", err);
     }
   };
 
@@ -76,8 +79,8 @@ const MyListings = () => {
                 />
               )}
               <h4>{book.title}</h4>
-              <p><strong>Author:</strong> {book.author}</p>
-              <p><strong>Genre:</strong> {book.genre}</p>
+              <p><strong>Author:</strong> {Array.isArray(book.author) ? book.author.join(", ") : book.author}</p>
+              <p><strong>Genre:</strong> {Array.isArray(book.genre) ? book.genre.join(", ") : book.genre}</p>
               <p><strong>Price:</strong> ₹{book.price}</p>
               <div className="book-actions">
                 <Link to={`/edit-book/${book._id}`}>

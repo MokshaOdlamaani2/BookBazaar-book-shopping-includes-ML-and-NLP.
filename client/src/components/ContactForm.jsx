@@ -2,29 +2,39 @@ import { useState } from "react";
 import axios from "axios";
 import "../styles/addBook.css";
 
+const API = import.meta.env.VITE_API_URL;
+
 const ContactForm = ({ sellerEmail }) => {
   const [buyerName, setBuyerName] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus("Sending...");
+    setStatus("");
+    setLoading(true);
 
     try {
-      await axios.post("http://localhost:5000/api/contact", {
+      await axios.post(`${API}/api/contact`, {
         sellerEmail,
         buyerName,
         buyerEmail,
         message,
       });
-      setStatus("Message sent successfully!");
+      setStatus("✅ Message sent successfully!");
       setBuyerName("");
       setBuyerEmail("");
       setMessage("");
-    } catch {
-      setStatus("Failed to send message.");
+    } catch (err) {
+      console.error("Contact form error:", err);
+      setStatus("❌ Failed to send message. Try again.");
+    } finally {
+      setLoading(false);
+
+      // Optional: clear status after 5 seconds
+      setTimeout(() => setStatus(""), 5000);
     }
   };
 
@@ -38,6 +48,7 @@ const ContactForm = ({ sellerEmail }) => {
           value={buyerName}
           onChange={(e) => setBuyerName(e.target.value)}
           required
+          disabled={loading}
         />
         <input
           type="email"
@@ -45,16 +56,20 @@ const ContactForm = ({ sellerEmail }) => {
           value={buyerEmail}
           onChange={(e) => setBuyerEmail(e.target.value)}
           required
+          disabled={loading}
         />
         <textarea
           placeholder="Your Message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           required
+          disabled={loading}
         />
-        <button type="submit">Send</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Sending..." : "Send"}
+        </button>
       </form>
-      {status && <p>{status}</p>}
+      {status && <p className="status-msg">{status}</p>}
     </div>
   );
 };

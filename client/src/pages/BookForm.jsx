@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-const API = process.env.REACT_APP_API_URL;
+
+// ✅ Vite environment variable syntax
+const API = import.meta.env.VITE_API_URL;
 
 const BookForm = ({ book, setBook }) => {
   const [loading, setLoading] = useState(false);
@@ -10,18 +12,22 @@ const BookForm = ({ book, setBook }) => {
   const handlePredictGenre = async () => {
     if (genrePredicted) return; // prevent multiple calls
 
-    if (!book.summary) return toast.error("Book summary is required.");
+    if (!book.summary) {
+      toast.error("Book summary is required.");
+      return;
+    }
 
     try {
       setLoading(true);
       const res = await axios.post(`${API}/api/ml/predict-genre`, {
         summary: book.summary,
       });
+
       setBook({ ...book, genre: res.data.predicted_genre });
       setGenrePredicted(true);
       toast.success("Genre predicted successfully");
     } catch (err) {
-      console.error(err);
+      console.error("❌ Genre prediction failed:", err);
       toast.error("Genre prediction failed");
     } finally {
       setLoading(false);

@@ -14,8 +14,8 @@ import {
 import { addFavorite, removeFavorite } from "../utils/favorites";
 import "../styles/browseBooks.css";
 
-const API = process.env.REACT_APP_API_URL;
-
+// ✅ Use Vite environment variable syntax
+const API = import.meta.env.VITE_API_URL;
 
 const BrowseBooks = () => {
   const [books, setBooks] = useState([]);
@@ -34,39 +34,40 @@ const BrowseBooks = () => {
   const suggestionBoxRef = useRef(null);
   const cachedQueries = useRef({}); // Cache previous autocomplete queries
 
-  // Fetch books whenever filters change
+  // 🔁 Fetch books whenever filters change
   useEffect(() => {
     fetchBooks();
   }, [search, genre, condition, page]);
 
-  // Load recently viewed books and liked books
+  // 📚 Load recently viewed books and liked books
   useEffect(() => {
     loadRecentViews();
     setLikedBooks(getLikedBooks());
   }, []);
 
-  // Fetch books from API
+  // 🧠 Fetch books from API
   const fetchBooks = async () => {
     try {
       const res = await axios.get(`${API}/api/books/all`, {
         params: { search, genre, condition, page, limit: 12 },
       });
+
       const newBooks = Array.isArray(res.data.books) ? res.data.books : [];
       setBooks((prev) => (page === 1 ? newBooks : [...prev, ...newBooks]));
       setHasMore(res.data.hasMore ?? false);
     } catch (error) {
-      console.error("Error fetching books:", error);
+      console.error("❌ Error fetching books:", error);
       toast.error("Failed to load books");
     }
   };
 
-  // Load recently viewed books
+  // 🕒 Load recently viewed books
   const loadRecentViews = async () => {
     const recent = await getRecentlyViewedBooks();
     setRecentViews(recent);
   };
 
-  // Add book to cart
+  // 🛒 Add book to cart
   const handleAddToCart = (book) => {
     const added = addToCart(book);
     if (added) {
@@ -76,25 +77,32 @@ const BrowseBooks = () => {
     }
   };
 
-  // Toggle favorite
+  // ❤️ Toggle favorite (like/unlike)
   const handleToggleLike = async (book) => {
     const bookId = book._id;
     const updatedLikes = getLikedBooks();
 
-    if (updatedLikes.includes(bookId)) {
-      await removeFavorite(userId, bookId);
-      toast.info("Unliked");
-    } else {
-      await addFavorite(userId, bookId);
-      toast.success("Liked");
-    }
+    try {
+      if (updatedLikes.includes(bookId)) {
+        await removeFavorite(userId, bookId);
+        toast.info("Removed from favorites");
+      } else {
+        await addFavorite(userId, bookId);
+        toast.success("Added to favorites");
+      }
 
-    toggleLikeBook(bookId);
-    setLikedBooks(getLikedBooks());
+      toggleLikeBook(bookId);
+      setLikedBooks(getLikedBooks());
+    } catch (err) {
+      console.error("❌ Error toggling like:", err);
+      toast.error("Something went wrong");
+    }
   };
 
+  // 📖 Pagination
   const handleLoadMore = () => setPage((prev) => prev + 1);
 
+  // ♻️ Clear all filters
   const clearFilters = () => {
     setSearch("");
     setGenre("");
@@ -102,13 +110,14 @@ const BrowseBooks = () => {
     setPage(1);
   };
 
+  // 🧠 Handle autocomplete selection
   const handleSuggestionClick = (text) => {
     setSearch(text);
     setShowSuggestions(false);
     setPage(1);
   };
 
-  // Debounced autocomplete with caching
+  // 🔍 Debounced autocomplete with caching
   const debouncedFetchSuggestions = useRef(
     debounce(async (query) => {
       if (query.length < 2) {
@@ -133,7 +142,7 @@ const BrowseBooks = () => {
         setSuggestions(suggs);
         setShowSuggestions(true);
       } catch (err) {
-        console.error("Autocomplete error:", err);
+        console.error("❌ Autocomplete error:", err);
         setSuggestions([]);
         setShowSuggestions(false);
       }
@@ -145,7 +154,7 @@ const BrowseBooks = () => {
     return () => debouncedFetchSuggestions.cancel();
   }, [search]);
 
-  // Close suggestions dropdown when clicking outside
+  // 🧭 Close suggestions dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -156,10 +165,10 @@ const BrowseBooks = () => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // 📘 Render a single book card
   const renderBookCard = (book) => (
     <div className="browse-book-card" key={book._id}>
       <div className="browse-book-left">
@@ -205,6 +214,8 @@ const BrowseBooks = () => {
     <div className="browse-wrapper">
       <aside className="browse-filter-sidebar">
         <h3>🔍 Filters</h3>
+
+        {/* Search with autocomplete */}
         <div className="browse-filter-group" ref={suggestionBoxRef}>
           <label>Search</label>
           <input
@@ -228,6 +239,7 @@ const BrowseBooks = () => {
           )}
         </div>
 
+        {/* Genre filter */}
         <div className="browse-filter-group">
           <label>Genre</label>
           <select
@@ -247,6 +259,7 @@ const BrowseBooks = () => {
           </select>
         </div>
 
+        {/* Condition filter */}
         <div className="browse-filter-group">
           <label>Condition</label>
           <select
@@ -267,6 +280,7 @@ const BrowseBooks = () => {
         </button>
       </aside>
 
+      {/* Main content */}
       <main className="browse-main-content">
         <section className="browse-all-books-section">
           <h3>📘 Available Books</h3>
@@ -288,6 +302,7 @@ const BrowseBooks = () => {
           <hr />
         </section>
 
+        {/* Recently Viewed */}
         {recentViews.length > 0 && (
           <section className="browse-recent-section">
             <div className="browse-recent-header">

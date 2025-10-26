@@ -4,8 +4,7 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import "../styles/myListings.css";
 
-const API = process.env.REACT_APP_API_URL;
-
+const API = import.meta.env.VITE_API_URL;
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -28,10 +27,10 @@ const Cart = () => {
       const res = await axios.get(`${API}/api/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setPastOrders(res.data);
-    } catch (error) {
-      console.error("Failed to fetch past orders:", error);
-      toast.error("Failed to load orders");
+      setPastOrders(res.data.orders || res.data);
+    } catch (err) {
+      console.error("Fetch past orders error:", err);
+      toast.error("Failed to load past orders");
     } finally {
       setLoadingOrders(false);
     }
@@ -53,8 +52,8 @@ const Cart = () => {
   );
 
   const handleCheckout = async () => {
-    if (cartItems.length === 0) return toast.error("Cart is empty");
     if (!token) return toast.error("Please login to place an order");
+    if (cartItems.length === 0) return toast.error("Cart is empty");
 
     setCheckoutLoading(true);
     try {
@@ -64,15 +63,16 @@ const Cart = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      // Clear cart
       setCartItems([]);
       localStorage.removeItem("cart");
-      toast.success("Order placed successfully");
+      toast.success("✅ Order placed successfully");
 
-      // Optimistically update past orders
-      setPastOrders((prev) => [res.data, ...prev]);
-    } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to place order");
-      console.error(error);
+      // Update past orders
+      setPastOrders((prev) => [res.data.order || res.data, ...prev]);
+    } catch (err) {
+      console.error("Checkout error:", err);
+      toast.error(err.response?.data?.error || "Failed to place order");
     } finally {
       setCheckoutLoading(false);
     }
@@ -83,8 +83,7 @@ const Cart = () => {
       <div className="cart-container">
         <h2>🛒 Your Cart</h2>
         <p>
-          Please <Link to="/login">login</Link> or{" "}
-          <Link to="/register">register</Link> to access your cart and orders.
+          Please <Link to="/login">login</Link> or <Link to="/register">register</Link> to access your cart and orders.
         </p>
       </div>
     );
@@ -102,28 +101,26 @@ const Cart = () => {
             {cartItems.map((book) => (
               <li key={book._id} className="cart-item">
                 <img
-                  src={
-                    book.image?.startsWith("http")
-                      ? book.image
-                      : `${API}/uploads/${book.image}`
-                  }
+                  src={book.image?.startsWith("http") ? book.image : `${API}/uploads/${book.image}`}
                   alt={book.title}
                   className="cart-thumb"
                 />
                 <div>
                   <h4>{book.title}</h4>
-                  <p>Author: {book.author}</p>
+                  <p>
+                    Author: {Array.isArray(book.author) ? book.author.join(", ") : book.author}
+                  </p>
                   <p>Price: ₹{Number(book.price).toFixed(2)}</p>
-                  <button onClick={() => handleRemove(book._id)}>Remove</button>
+                  <button onClick={() => handleRemove(book._id)} disabled={checkoutLoading}>
+                    Remove
+                  </button>
                 </div>
               </li>
             ))}
           </ul>
 
           <div className="checkout-summary">
-            <p>
-              <strong>Total:</strong> ₹{total.toFixed(2)}
-            </p>
+            <p><strong>Total:</strong> ₹{total.toFixed(2)}</p>
             <button
               className="checkout-btn"
               onClick={handleCheckout}
@@ -142,18 +139,12 @@ const Cart = () => {
           <h3>Your Past Orders</h3>
           {pastOrders.map((order) => (
             <div key={order._id} className="order-card">
-              <p>
-                <strong>Ordered on:</strong>{" "}
-                {new Date(order.orderedAt).toLocaleString()}
-              </p>
-              <p>
-                <strong>Total:</strong> ₹{Number(order.total).toFixed(2)}
-              </p>
+              <p><strong>Ordered on:</strong> {new Date(order.orderedAt).toLocaleString()}</p>
+              <p><strong>Total:</strong> ₹{Number(order.total).toFixed(2)}</p>
               <ul>
                 {order.items.map((item, idx) => (
                   <li key={item.bookId || idx}>
-                    {item.title || "Untitled"} - ₹
-                    {Number(item.price).toFixed(2)} x {item.quantity || 1}
+                    {item.title || "Untitled"} - ₹{Number(item.price).toFixed(2)} × {item.quantity || 1}
                   </li>
                 ))}
               </ul>
